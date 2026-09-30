@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vấn đề 06 - Âm mưu & Giải pháp phòng chống (Tôn giáo) | GDQP&AN - ĐH Đại Nam</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dnu-orange: #F37021;
+      --dnu-orange-hover: #E05D0E;
+      --dnu-orange-light: #FFF2E8;
+      --dnu-blue: #003B70;
+      --dnu-blue-dark: #00254A;
+      --dnu-blue-light: #EBF3FA;
+      --dnu-cobalt: #0047AB;
+      --accent-gold: #F59E0B;
+      --success: #10B981;
+      --danger: #EF4444;
+      --bg-slate: #060B17;
+      --card-bg: #FFFFFF;
+      --card-border: #E2E8F0;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --text-light: #94A3B8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif; }
+    body { background: var(--bg-slate); color: var(--text-main); height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
+    
+    /* Stage Area - Takes full screen above the bottom footer */
+    .presentation-stage {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #060B17;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 18px;
+    }
+
+    .slide-deck {
+      width: 100%;
+      max-width: 1360px;
+      height: 100%;
+      max-height: 765px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Persistent Canvas Overlays inside the Slide Deck */
+    .canvas-header-overlay {
+      position: absolute;
+      top: 18px;
+      left: 36px;
+      right: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 40;
+      pointer-events: none;
+    }
+    .canvas-slogan {
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--dnu-orange);
+      pointer-events: auto;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .canvas-logo {
+      height: 38px;
+      object-fit: contain;
+      pointer-events: auto;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    }
+
+    .canvas-footer-overlay {
+      position: absolute;
+      bottom: 14px;
+      left: 36px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #64748B;
+      z-index: 40;
+    }
+    .canvas-page-num {
+      font-family: monospace;
+      font-weight: 800;
+      color: var(--dnu-blue);
+      background: var(--dnu-blue-light);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .canvas-link {
+      color: #64748B;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .canvas-link:hover {
+      color: var(--dnu-orange);
+      text-decoration: underline;
+    }
+
+    /* Dark Cover Theme Styling for Overlays */
+    .slide-deck.is-cover .canvas-slogan {
+      color: var(--dnu-orange);
+    }
+    .slide-deck.is-cover .canvas-page-num {
+      color: #FFA266;
+      background: rgba(243, 112, 33, 0.2);
+      border: 1px solid rgba(243, 112, 33, 0.35);
+    }
+    .slide-deck.is-cover .canvas-footer-overlay {
+      color: #94A3B8;
+    }
+    .slide-deck.is-cover .canvas-link {
+      color: #CBD5E1;
+    }
+    .slide-deck.is-cover .canvas-link:hover {
+      color: white;
+    }
+    /* Slide Container - Optimized for perfect fit without scrollbars */
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 50px 38px 34px 38px;
+      background: white;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(25px);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+      z-index: 10;
+    }
+
+    /* Slide Typography */
+    .slide-top-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .topic-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--dnu-blue-light); color: var(--dnu-blue); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; border-left: 3px solid var(--dnu-orange); }
+    .slide-heading {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--dnu-blue-dark);
+      line-height: 1.25;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .slide-heading span.highlight { color: var(--dnu-orange); }
+    .slide-body {
+      flex: 1;
+      font-size: 14.5px;
+      line-height: 1.4;
+      color: var(--text-main);
+      overflow: hidden;
+      padding-right: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Grids & Cards */
+    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; height: auto; flex: 1; min-height: 0; }
+    .grid-2col-wide-left { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 14px; height: auto; flex: 1; min-height: 0; }
+    .grid-2col-wide-right { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 14px; height: auto; flex: 1; min-height: 0; }
+    .grid-3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; height: auto; flex: 1; min-height: 0; }
+    .grid-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; height: auto; flex: 1; min-height: 0; }
+    
+    .info-card { background: #F8FAFC; border: 1px solid var(--card-border); border-radius: 6px; padding: 8px 12px; display: flex; flex-direction: column; box-shadow: 0 2px 6px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s; }
+    .info-card:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,0.06); }
+    .info-card.primary { border-top: 4px solid var(--dnu-orange); }
+    .info-card.secondary { border-top: 4px solid var(--dnu-blue); }
+    .info-card.accent { border-top: 4px solid var(--accent-gold); }
+    
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--dnu-blue-dark);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .card-title .icon-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      background: var(--dnu-blue);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11.5px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .info-card.primary .card-title .icon-badge {
+      background: var(--dnu-orange);
+    }
+
+    .bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .bullet-list li {
+      position: relative;
+      padding-left: 16px;
+      font-size: 14px;
+      line-height: 1.38;
+    }
+    .bullet-list li::before { content: "•"; position: absolute; left: 3px; top: -1px; color: var(--dnu-orange); font-size: 14px; font-weight: bold; }
+    .bullet-list li strong { color: var(--dnu-blue-dark); }
+
+    .stat-banner { background: linear-gradient(135deg, #003B70 0%, #00254A 100%); color: white; border-radius: 6px; padding: 6px 14px; margin-bottom: 8px; display: flex; justify-content: space-around; align-items: center; }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 18px; font-weight: 800; color: var(--dnu-orange); }
+    .stat-label { font-size: 11px; color: #CBD5E1; margin-top: 1px; }
+
+    /* Media Image Container */
+    .media-container { border-radius: 6px; overflow: hidden; height: 100%; display: flex; flex-direction: column; background: #F1F5F9; border: 1px solid var(--card-border); }
+    .media-img { width: 100%; height: 100%; max-height: 240px; object-fit: cover; flex: 1; }
+    .media-caption { padding: 6px 10px; font-size: 12.5px; color: var(--text-muted); font-style: italic; border-top: 1px solid var(--card-border); background: white; }
+
+    /* Feature Visual Card (With embedded photo) */
+    .visual-feature-card {
+      background: white;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .visual-feature-card .vfc-img {
+      width: 100%;
+      height: 135px;
+      max-height: 145px;
+      object-fit: cover;
+    }
+    .visual-feature-card .vfc-body {
+      padding: 8px 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: #F8FAFC;
+    }
+    .visual-feature-card .vfc-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--dnu-blue-dark);
+      margin-bottom: 3px;
+    }
+    .visual-feature-card .vfc-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.38;
+    }
+
+    /* Responsive adjustments for slides with stat-banner */
+    .slide:has(.stat-banner) .grid-2col {
+      gap: 10px;
+    }
+    .slide:has(.stat-banner) .visual-feature-card .vfc-img,
+    .slide:has(.stat-banner) .media-container .media-img {
+      height: 100px;
+      max-height: 105px;
+    }
+    .slide:has(.stat-banner) .visual-feature-card .vfc-body {
+      padding: 6px 10px;
+    }
+    .slide:has(.stat-banner) .visual-feature-card .vfc-title {
+      font-size: 13.5px;
+      margin-bottom: 2px;
+    }
+    .slide:has(.stat-banner) .visual-feature-card .vfc-desc {
+      font-size: 12.5px;
+      line-height: 1.3;
+    }
+    .slide:has(.stat-banner) .info-card {
+      padding: 6px 10px;
+    }
+    .slide:has(.stat-banner) .card-title {
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+    .slide:has(.stat-banner) .card-title .icon-badge {
+      width: 20px;
+      height: 20px;
+      font-size: 11px;
+    }
+    .slide:has(.stat-banner) .bullet-list {
+      gap: 2px;
+    }
+    .slide:has(.stat-banner) .bullet-list li {
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    /* Mindmap */
+    .mindmap-box { background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 8px; padding: 10px 12px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+    .mm-node-root {
+      background: var(--dnu-blue-dark);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      border: 2px solid var(--dnu-orange);
+    }
+    .mm-branch-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+    .mm-branch { background: white; border: 1px solid #E2E8F0; border-radius: 6px; padding: 8px 10px; border-top: 3px solid var(--dnu-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+    .mm-branch.highlight { border-top-color: var(--dnu-orange); }
+    .mm-branch-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--dnu-blue-dark);
+      margin-bottom: 3px;
+    }
+    .mm-branch-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* Quiz Game */
+    .quiz-container { background: white; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 18px; height: 100%; display: flex; flex-direction: column; box-sizing: border-box; }
+    .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .quiz-score-badge { background: var(--dnu-orange-light); color: var(--dnu-orange); font-weight: 800; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+    .quiz-question {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--dnu-blue-dark);
+      margin-bottom: 10px;
+      line-height: 1.35;
+    }
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .quiz-option-btn {
+      background: #F8FAFC;
+      border: 2px solid #E2E8F0;
+      border-radius: 6px;
+      padding: 9px 14px;
+      font-size: 13.5px;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+    .quiz-option-btn:hover:not(:disabled) {
+      border-color: var(--dnu-orange);
+      background: white;
+    }
+    .quiz-option-btn.correct {
+      background: #ECFDF5;
+      border-color: #10B981;
+      color: #065F46;
+      font-weight: 700;
+    }
+    .quiz-option-btn.wrong {
+      background: #FEF2F2;
+      border-color: #EF4444;
+      color: #991B1B;
+    }
+    .quiz-explanation {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      line-height: 1.35;
+      margin-bottom: 8px;
+      display: none;
+    }
+    .quiz-explanation.show { display: block; }
+    .quiz-controls { display: flex; justify-content: flex-end; }
+    .btn-quiz-action {
+      background: var(--dnu-orange);
+      color: white;
+      border: none;
+      padding: 7px 18px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-quiz-action:hover:not(:disabled) { opacity: 0.9; }
+    .btn-quiz-action:disabled { opacity: 0.4; cursor: not-allowed; }
+
+
+    /* Cover Slide */
+    .slide-cover {
+      background: linear-gradient(135deg, #00254A 0%, #003B70 50%, #080E1E 100%);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 50px 60px;
+    }
+    .cover-badge { background: rgba(243, 112, 33, 0.25); border: 1px solid var(--dnu-orange); color: #FFA266; font-size: 12.5px; font-weight: 700; padding: 5px 18px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 18px; }
+    .cover-title {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 24px;
+      max-width: 980px;
+    }
+    .cover-title span { color: var(--dnu-orange); }
+    .cover-footer {
+      display: flex;
+      justify-content: center;
+      font-size: 17px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      padding-top: 20px;
+      color: #CBD5E1;
+    }
+    .cover-footer strong { color: white; }
+
+    /* Mindmap */
+    .mindmap-box { background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 16px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+    .mm-node-root {
+      background: var(--dnu-blue-dark);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 17px;
+      border: 2px solid var(--dnu-orange);
+    }
+    .mm-branch-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
+    .mm-branch { background: white; border: 1px solid #E2E8F0; border-radius: 6px; padding: 11px 13px; border-top: 3px solid var(--dnu-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+    .mm-branch.highlight { border-top-color: var(--dnu-orange); }
+    .mm-branch-title {
+      font-weight: 700;
+      font-size: 15.5px;
+      color: var(--dnu-blue-dark);
+      margin-bottom: 6px;
+    }
+    .mm-branch-desc {
+      font-size: 14.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Quiz Game */
+    .quiz-container { background: white; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px; height: 100%; display: flex; flex-direction: column; }
+    .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .quiz-score-badge { background: var(--dnu-orange-light); color: var(--dnu-orange); font-weight: 800; padding: 3px 12px; border-radius: 16px; font-size: 13px; }
+    .quiz-question {
+      font-size: 18.5px;
+      font-weight: 700;
+      color: var(--dnu-blue-dark);
+      margin-bottom: 18px;
+      line-height: 1.45;
+    }
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .quiz-option-btn {
+      background: #F8FAFC;
+      border: 2px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 15.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quiz-option-btn:hover:not(:disabled) { border-color: var(--dnu-orange); background: var(--dnu-orange-light); }
+    .quiz-option-btn.correct { background: #ECFDF5; border-color: var(--success); color: #065F46; }
+    .quiz-option-btn.wrong { background: #FEF2F2; border-color: var(--danger); color: #991B1B; }
+    .quiz-explanation { font-size: 14.5px; padding: 10px 14px; border-radius: 6px; background: #F1F5F9; color: var(--text-main); margin-bottom: 12px; display: none; line-height: 1.45; }
+    .quiz-explanation.show { display: block; }
+    .quiz-controls { display: flex; justify-content: flex-end; gap: 10px; margin-top: auto; }
+    .btn-quiz-action { background: var(--dnu-blue); color: white; border: none; padding: 8px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .btn-quiz-action:hover { background: var(--dnu-orange); }
+
+    /* Presentation Bottom Controls Bar (Simplified & Focused) */
+    .presentation-footer-bar {
+      height: 48px;
+      background: #040810;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 24px;
+      position: relative;
+      z-index: 50;
+    }
+    .footer-nav-center {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: white;
+      padding: 6px 18px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-nav:hover:not(:disabled) { background: var(--dnu-orange); border-color: var(--dnu-orange); }
+    .btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .footer-right-tools {
+      position: absolute;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-tool {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #CBD5E1;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .btn-tool:hover { background: rgba(255,255,255,0.2); color: white; }
+
+    .progress-track { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: rgba(255, 255, 255, 0.1); }
+    .progress-fill { height: 100%; width: 0%; background: var(--dnu-orange); transition: width 0.3s ease; }
+
+    /* Overview Modal */
+    .overview-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(6, 11, 23, 0.95); backdrop-filter: blur(8px); z-index: 100; display: none; flex-direction: column; padding: 26px 36px; }
+    .overview-modal.open { display: flex; }
+    .overview-header { display: flex; justify-content: space-between; align-items: center; color: white; margin-bottom: 20px; }
+    .overview-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; overflow-y: auto; padding-right: 6px; }
+    .overview-thumb { background: white; border-radius: 6px; height: 130px; padding: 12px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+    .overview-thumb:hover { transform: scale(1.02); border-color: var(--dnu-orange); }
+    .overview-thumb.current { border-color: var(--dnu-orange); box-shadow: 0 0 12px rgba(243, 112, 33, 0.5); }
+    .thumb-num { font-size: 11px; font-weight: 800; color: var(--dnu-orange); }
+    .thumb-title { font-size: 13px; font-weight: 700; color: var(--dnu-blue-dark); line-height: 1.3; }
+  
+    /* Presentation Timer Badge in Canvas Overlay */
+    .canvas-timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 59, 112, 0.08);
+      border: 1px solid rgba(0, 59, 112, 0.22);
+      padding: 3px 9px;
+      border-radius: 6px;
+      color: var(--dnu-blue-dark);
+      font-weight: 700;
+      font-size: 13px;
+      font-family: monospace;
+      letter-spacing: 0.5px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+    .canvas-timer-badge:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .slide-deck.is-cover .canvas-timer-badge {
+      background: rgba(243, 112, 33, 0.15);
+      border-color: rgba(243, 112, 33, 0.35);
+      color: #FFA266;
+    }
+    .timer-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #94A3B8;
+      display: inline-block;
+      transition: all 0.3s;
+    }
+    .timer-dot.running {
+      background: #10B981;
+      box-shadow: 0 0 8px #10B981;
+      animation: timerPulse 1.8s infinite;
+    }
+    @keyframes timerPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .timer-digits {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+    }
+
+    /* Presentation Timer in Bottom Bar (Bottom-Left) */
+    .footer-left-tools {
+      position: absolute;
+      left: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-timer-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #E2E8F0;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: monospace;
+      letter-spacing: 0.5px;
+      user-select: none;
+    }
+    .footer-timer-label {
+      font-size: 12px;
+      color: #94A3B8;
+    }
+
+  
+    /* Presentation (16:9 Projector Cinema Mode) */
+    body.is-presenting {
+      background: #000000 !important;
+    }
+    body.is-presenting .presentation-stage {
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: #000000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    body.is-presenting .presentation-footer-bar {
+      display: none !important;
+    }
+    body.is-presenting .slide-deck {
+      aspect-ratio: 16 / 9 !important;
+      width: min(100vw, calc(100vh * 16 / 9)) !important;
+      height: min(100vh, calc(100vw * 9 / 16)) !important;
+      max-width: none !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.9) !important;
+      cursor: default;
+    }
+    body.is-presenting .btn-exit-present {
+      display: inline-flex !important;
+    }
+    
+        /* Floating Exit Presentation Bar at top center (like Google Slides) */
+    .btn-exit-present {
+      display: none;
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #F8FAFC;
+      padding: 7px 20px;
+      border-radius: 24px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: all 0.3s ease;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    body.is-presenting:hover .btn-exit-present,
+    .btn-exit-present:hover {
+      opacity: 1;
+    }
+    .btn-exit-present:hover {
+      background: rgba(220, 38, 38, 0.95);
+      border-color: #EF4444;
+      transform: translateX(-50%) scale(1.05);
+    }
+    
+    .btn-tool.btn-present {
+      background: linear-gradient(135deg, var(--dnu-orange) 0%, #D45A00 100%);
+      color: white;
+      border-color: var(--dnu-orange);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(243, 112, 33, 0.35);
+    }
+    .btn-tool.btn-present:hover {
+      background: linear-gradient(135deg, #FF8233 0%, var(--dnu-orange) 100%);
+      box-shadow: 0 4px 12px rgba(243, 112, 33, 0.5);
+    }
+
+  
+    /* Presenter Button in Footer */
+    .btn-tool.btn-present {
+      background: linear-gradient(135deg, rgba(243, 112, 33, 0.25) 0%, rgba(243, 112, 33, 0.12) 100%);
+      border: 1px solid var(--dnu-orange);
+      color: #FFA266;
+      font-weight: 700;
+    }
+    .btn-tool.btn-present:hover {
+      background: var(--dnu-orange);
+      color: white;
+      box-shadow: 0 0 12px rgba(243, 112, 33, 0.5);
+    }
+
+    /* Floating Exit Presenter Button */
+    .btn-exit-present {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      z-index: 99999;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #E2E8F0;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: none;
+      opacity: 0.2;
+    }
+    .btn-exit-present:hover {
+      opacity: 1;
+      background: rgba(220, 38, 38, 0.95);
+      border-color: #EF4444;
+      color: white;
+      transform: scale(1.04);
+      box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+    }
+
+    /* ==============================================================
+       16:9 PROJECTOR PRESENTATION MODE
+       When active: hides footer, borders, stage paddings.
+       Slide fits 100% into standard 16:9 projector screen.
+       ============================================================== */
+    body.is-presenting {
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      background: #000000 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+    body.is-presenting .presentation-stage {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #000000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 1000 !important;
+    }
+    body.is-presenting .slide-deck {
+      /* Perfect 16:9 aspect ratio calculation */
+      width: min(100vw, 177.78vh) !important;
+      height: min(56.25vw, 100vh) !important;
+      max-width: none !important;
+      max-height: none !important;
+      aspect-ratio: 16 / 9 !important;
+      border-radius: 0 !important;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.95) !important;
+      border: none !important;
+      cursor: default !important;
+    }
+    body.is-presenting .presentation-footer-bar {
+      display: none !important;
+    }
+    body.is-presenting .btn-exit-present {
+      display: block !important;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Slide Stage -->
+  <main class="presentation-stage">
+    <div class="slide-deck is-cover" id="slideDeck">
+      
+      <!-- Top Persistent Canvas Overlay: Slogan (Top-Left) & Logo (Top-Right) -->
+      <div class="canvas-header-overlay">
+        <div class="canvas-slogan">HỌC ĐỂ THAY ĐỔI</div>
+        <img src="../images/dai-nam-logo-ngang.svg" alt="Đại học Đại Nam" class="canvas-logo" onerror="this.src='https://dainam.edu.vn/img/logo/dai-nam-logo-ngang.svg'">
+      </div>
+
+            <!-- Bottom Persistent Canvas Overlay: Page Number, Link & Timer (Bottom-Left) -->
+      <div class="canvas-footer-overlay">
+        <div class="canvas-timer-badge" id="canvasTimer" title="Thời gian thuyết trình (bắt đầu tính từ khi chuyển khỏi slide đầu tiên)">
+          <span class="timer-dot"></span>
+          <span class="timer-icon">⏱</span>
+          <span class="timer-digits" id="timerDisplay">00:00</span>
+        </div>
+        <span style="opacity:0.3;">|</span>
+        <span class="canvas-page-num" id="canvasPageNum">01 / 12</span>
+        <span style="opacity:0.3;">|</span>
+        <a href="http://dainam.edu.vn" target="_blank" class="canvas-link">http://dainam.edu.vn</a>
+      </div>
+
+      
+<!-- Slide 1: Bìa -->
+<div class="slide slide-cover active">
+  <div class="cover-badge">VẤN ĐỀ 06 • GIÁO DỤC QUỐC PHÒNG & AN NINH (HỌC PHẦN 2)</div>
+  <h1 class="cover-title">ÂM MƯU, THỦ ĐOẠN LỢI DỤNG VẤN ĐỀ TÔN GIÁO VÀ <span>CÁC GIẢI PHÁP CƠ BẢN PHÒNG, CHỐNG</span></h1>
+  <div class="cover-footer">
+    <div>Nhóm thực hiện: <strong>Nhóm 6 (Lớp GDQP-AN)</strong></div>
+  </div>
+</div>
+
+<!-- Slide 2: Mục tiêu & Khung nội dung -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">TỔNG QUAN BÀI HỌC</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Phần II & III: Đấu tranh phòng chống</span>
+  </div>
+  <h2 class="slide-heading">Mục tiêu & <span class="highlight">Khung nội dung thuyết trình</span></h2>
+  <div class="slide-body">
+    <div class="grid-2col-wide-left">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="info-card primary">
+          <div class="card-title"><span class="icon-badge">01</span> Âm mưu & 4 Thủ đoạn</div>
+          <ul class="bullet-list">
+            <li><strong>Âm mưu:</strong> Biến tôn giáo thành "lực lượng đối trọng chính trị", quốc tế hóa tự do tôn giáo.</li>
+            <li><strong>4 Thủ đoạn nguy hiểm:</strong> Kích động khiếu kiện đất đai; gieo rắc tà đạo; móc nối phần tử cực đoan; lợi dụng sự cố xã hội.</li>
+          </ul>
+        </div>
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">02</span> 4 Giải pháp Chiến lược</div>
+          <ul class="bullet-list">
+            <li><strong>Giải pháp 1:</strong> Đẩy mạnh tuyên truyền Luật Tín ngưỡng, tôn giáo 2016.</li>
+            <li><strong>Giải pháp 2:</strong> Củng cố khối đại đoàn kết lương - giáo vững chắc.</li>
+            <li><strong>Giải pháp 3:</strong> Nâng cao năng lực quản lý nhà nước về tôn giáo (then chốt).</li>
+            <li><strong>Giải pháp 4:</strong> Kiên quyết đấu tranh tư tưởng, vô hiệu hóa kẻ phản động.</li>
+          </ul>
+        </div>
+        <div class="info-card accent">
+          <div class="card-title"><span class="icon-badge">03</span> Trách nhiệm Sinh viên DNU</div>
+          <ul class="bullet-list">
+            <li><strong>Hành động thiết thực:</strong> Nhận diện thủ đoạn kích động, bài trừ tà đạo học đường, lan tỏa lối sống đẹp.</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="visual-feature-card">
+        <img src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=1200&q=80" alt="Đoàn kết Lương Giáo" class="vfc-img">
+        <div class="vfc-body">
+          <div class="vfc-title">Thắt chặt Khối Đại đoàn kết Lương - Giáo</div>
+          <p class="vfc-desc">Chủ động nhận diện âm mưu thù địch và thực hiện tốt 4 giải pháp phòng chống giúp bảo vệ quyền tự do tín ngưỡng chân chính, đồng thời đập tan mọi thủ đoạn lợi dụng tôn giáo phá hoại đất nước.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 3: Âm mưu thù địch -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">NHẬN DIỆN ÂM MƯU</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Bản chất thâm độc</span>
+  </div>
+  <h2 class="slide-heading">Âm mưu thù địch: Biến tôn giáo thành <span class="highlight">“Lực lượng đối trọng chính trị”</span></h2>
+  <div class="slide-body">
+    <div class="grid-2col">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="info-card primary">
+          <div class="card-title"><span class="icon-badge">!</span> Biến Tôn giáo thành Lực lượng Đối kháng</div>
+          <ul class="bullet-list">
+            <li>Kẻ địch tìm mọi cách tách các tổ chức giáo hội ra khỏi sự quản lý của Nhà nước, biến tôn giáo thành "tổ chức chính trị đối lập".</li>
+            <li>Xúi giục chức sắc và tín đồ chống đối các chủ trương phát triển kinh tế - xã hội của chính quyền địa phương.</li>
+          </ul>
+        </div>
+
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">🎯</span> Chiêu bài "Nhân quyền & Tự do Tôn giáo"</div>
+          <ul class="bullet-list">
+            <li>Vu cáo Việt Nam "đàn áp tôn giáo, kỳ thị tín đồ" tại các diễn đàn quốc tế.</li>
+            <li>Vận động các tổ chức quốc tế đưa Việt Nam vào "Danh sách các nước cần quan tâm đặc biệt về tôn giáo" (CPC) để gây sức ép kinh tế, ngoại giao.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="visual-feature-card">
+        <img src="https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1200&q=80" alt="Tôn giáo hòa bình tại Việt Nam" class="vfc-img">
+        <div class="vfc-body">
+          <div class="vfc-title">Sự thật về Tự do Tôn giáo tại Việt Nam</div>
+          <p class="vfc-desc">Hàng triệu tín đồ tự do sinh hoạt tại gần 30.000 cơ sở thờ tự trên cả nước. Mọi luận điệu vu cáo đàn áp tôn giáo chỉ là chiêu bài bẩn thỉu hòng can thiệp vào chủ quyền độc lập của Việt Nam.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 4: 4 Thủ đoạn chống phá -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">THỦ ĐOẠN CHỐNG PHÁ</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Trên lĩnh vực tôn giáo</span>
+  </div>
+  <h2 class="slide-heading">Bốn thủ đoạn chống phá <span class="highlight">Trên lĩnh vực tôn giáo</span></h2>
+  <div class="slide-body">
+    <div class="grid-2col">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="info-card primary">
+          <div class="card-title"><span class="icon-badge">1</span> Kích động khiếu kiện đất đai cơ sở thờ tự</div>
+          <p style="font-size:16.5px; line-height:1.5;">Lợi dụng việc đền bù, giải phóng mặt bằng để xúi giục tín đồ tụ tập đông người, chiếm giữ đất công trái phép, gây rối an ninh.</p>
+        </div>
+
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">2</span> Truyền bá "tà đạo, đạo lạ" độc hại</div>
+          <p style="font-size:16.5px; line-height:1.5;">Gieo rắc các tà giáo phản khoa học (Hội thánh Đức Chúa Trời Mẹ, Hà Mòn) làm tan nát hạnh phúc gia đình, trục lợi tiền bạc.</p>
+        </div>
+
+        <div class="info-card accent">
+          <div class="card-title"><span class="icon-badge">3</span> Mua chuộc các phần tử đội lốt tôn giáo</div>
+          <p style="font-size:16.5px; line-height:1.5;">Tài trợ tiền bạc, phong tặng các danh hiệu nhân quyền rởm cho các chức sắc biến chất để biến họ thành tay sai chống phá.</p>
+        </div>
+
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">4</span> Lợi dụng sự cố xã hội kích động biểu tình</div>
+          <p style="font-size:16.5px; line-height:1.5;">Triệt để khai thác các sự cố môi trường, thiên tai để thổi bùng bức xúc quần chúng, biến mâu thuẫn dân sự thành bạo loạn chính trị.</p>
+        </div>
+      </div>
+
+      <div class="visual-feature-card">
+        <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80" alt="Cảnh giác mạng xã hội" class="vfc-img">
+        <div class="vfc-body">
+          <div class="vfc-title">Phòng ngừa Tin giả & Kích động</div>
+          <p class="vfc-desc">Các thế lực thù địch tận dụng triệt để các mạng xã hội để livestream kích động giáo dân. Giữ vững cái đầu lạnh và tư duy phản biện là tấm lá chắn tốt nhất trước các cạm bẫy này.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 5: Case Study Formosa 2016 -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">BÀI HỌC THỰC TIỄN</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Case Study điển hình</span>
+  </div>
+  <h2 class="slide-heading">Case Study: <span class="highlight">Lợi dụng sự cố Formosa & Bài học cảnh giác</span></h2>
+  <div class="slide-body">
+    <div class="grid-2col">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="info-card primary">
+          <div class="card-title"><span class="icon-badge">!</span> Diễn biến Sự cố Formosa (Năm 2016)</div>
+          <ul class="bullet-list">
+            <li>Sự cố ô nhiễm biển miền Trung là tai nạn môi trường công nghiệp đáng tiếc đã được Chính phủ xử lý, buộc Formosa bồi thường 500 triệu USD.</li>
+            <li>Tuy nhiên, một số đối tượng cực đoan đội lốt tôn giáo (Nguyễn Đình Thục, Đặng Hữu Nam) đã kích động hàng ngàn giáo dân chặn Quốc lộ 1A, đập phá xe công vụ, đòi lật đổ chính quyền.</li>
+          </ul>
+        </div>
+
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">★</span> Ba Bài học Cảnh giác Sâu sắc</div>
+          <ul class="bullet-list">
+            <li><strong>Minh bạch thông tin:</strong> Kịp thời công khai tiến độ bồi thường thiệt hại để kẻ xấu không thể trục lợi niềm tin.</li>
+            <li><strong>Phân biệt rõ đối tượng:</strong> Kiên quyết xử lý nghiêm các đối tượng cầm đầu kích động; kiên trì tuyên truyền vận động giáo dân.</li>
+            <li><strong>Chăm lo sinh kế người dân:</strong> Hỗ trợ ngư dân chuyển đổi nghề, làm sạch môi trường biển nhanh chóng.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="visual-feature-card">
+        <img src="https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80" alt="Biển xanh miền Trung bình yên" class="vfc-img">
+        <div class="vfc-body">
+          <div class="vfc-title">Biển miền Trung Bình yên Trở lại</div>
+          <p class="vfc-desc">Nhờ sự sáng suốt của đại đa số bà con giáo dân và sự giải quyết thấu tình đạt lý của Nhà nước, âm mưu biến sự cố Formosa thành cuộc "Cách mạng màu" hoàn toàn bị bẻ gãy. Ngư dân miền Trung hôm nay lại vững tin vươn khơi bám biển.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 6: Giải pháp 1 & 2 -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">GIẢI PHÁP CHIẾN LƯỢC</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Giải pháp 1 & Giải pháp 2</span>
+  </div>
+  <h2 class="slide-heading">Giải pháp 1 & 2: <span class="highlight">Đẩy mạnh Tuyên truyền & Đoàn kết Lương - Giáo</span></h2>
+  <div class="slide-body">
+    <div class="grid-2col">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="info-card primary">
+          <div class="card-title"><span class="icon-badge">1</span> Giải pháp 1: Đẩy mạnh Tuyên truyền Pháp luật</div>
+          <ul class="bullet-list">
+            <li>Tuyên truyền sâu rộng Luật Tín ngưỡng, tôn giáo năm 2016 đến từng chức sắc, chức việc, nhà tu hành và tín đồ.</li>
+            <li>Làm cho đồng bào có đạo nhận thức rõ âm mưu thâm độc của các thế lực thù địch lợi dụng tôn giáo chống phá đất nước.</li>
+            <li>Kịp thời biểu dương những tấm gương chức sắc, tín đồ tiêu biểu trong lao động sản xuất và bảo vệ an ninh trật tự.</li>
+          </ul>
+        </div>
+
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">2</span> Giải pháp 2: Tăng cường Khối Đoàn kết Lương - Giáo</div>
+          <ul class="bullet-list">
+            <li>Thực hiện phương châm: <em>"Đạo gắn với Đời", "Sống phúc âm giữa lòng dân tộc", "Đạo pháp - Dân tộc - Chủ nghĩa xã hội".</em></li>
+            <li>Tôn trọng quyền tự do tín ngưỡng chính đáng; giải quyết kịp thời các nhu cầu sinh hoạt tôn giáo hợp pháp.</li>
+            <li>Huy động nguồn lực các tôn giáo tham gia các phong trào thi đua yêu nước, xây dựng nông thôn mới, đô thị văn minh.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="visual-feature-card">
+        <img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80" alt="Văn hóa tâm linh hòa bình" class="vfc-img">
+        <div class="vfc-body">
+          <div class="vfc-title">Đoàn kết Lương - Giáo là Nền tảng</div>
+          <p class="vfc-desc">Chức sắc và tín đồ các tôn giáo luôn là những công dân yêu nước mẫu mực. Tăng cường khối đại đoàn kết lương - giáo chính là vũ khí mạnh nhất làm phá sản mọi toan tính chia rẽ của ngoại bang.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 7: Giải pháp 3 -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">GIẢI PHÁP THEN CHỐT</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Giải pháp 3</span>
+  </div>
+  <h2 class="slide-heading">Giải pháp 3: Nâng cao năng lực quản lý nhà nước <span class="highlight">Về tôn giáo</span></h2>
+  <div class="slide-body">
+    <div class="grid-2col">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="info-card primary">
+          <div class="card-title"><span class="icon-badge">★</span> Vị trí Quyết định của Quản lý Nhà nước</div>
+          <p style="font-size:16.5px; line-height:1.5;">Nâng cao hiệu lực quản lý nhà nước là giải pháp then chốt nhằm giữ vững kỷ cương phép nước, bảo đảm cho mọi hoạt động tôn giáo diễn ra lành mạnh, tuân thủ đúng hiến chương và pháp luật.</p>
+        </div>
+
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">3</span> Ba Nội dung Thực hiện Cốt lõi</div>
+          <ul class="bullet-list">
+            <li><strong>Thực thi nghiêm Luật TNTG:</strong> Hướng dẫn các tổ chức tôn giáo đăng ký hoạt động, phong phẩm, bổ nhiệm chức sắc theo đúng trình tự pháp luật.</li>
+            <li><strong>Đào tạo cán bộ chuyên trách:</strong> Bồi dưỡng phẩm chất đạo đức, trình độ lý luận và hiểu biết sâu sắc về giáo lý, giáo luật cho cán bộ làm công tác tôn giáo cơ sở.</li>
+            <li><strong>Ngăn chặn tà đạo từ sớm:</strong> Kịp thời phát hiện và kiên quyết xóa bỏ các tà đạo, đạo lạ hoạt động phi pháp, mê tín dị đoan.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="visual-feature-card">
+        <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80" alt="Pháp luật tôn giáo Nhà nước" class="vfc-img">
+        <div class="vfc-body">
+          <div class="vfc-title">Kỷ cương và Minh bạch</div>
+          <p class="vfc-desc">Nhà nước pháp quyền bảo hộ quyền tự do tôn giáo chính đáng, đồng thời kiên quyết xử lý không có vùng cấm đối với bất kỳ cá nhân, tổ chức nào lợi dụng tôn giáo vi phạm pháp luật.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 8: Giải pháp 4 -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">ĐẤU TRANH & VÔ HIỆU HÓA</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Giải pháp 4</span>
+  </div>
+  <h2 class="slide-heading">Giải pháp 4: Kiên quyết đấu tranh tư tưởng & <span class="highlight">Vô hiệu hóa kẻ phản động</span></h2>
+  <div class="slide-body">
+    <div class="grid-2col">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="info-card primary">
+          <div class="card-title"><span class="icon-badge">⚡</span> Đấu tranh Tư tưởng - Ngoại giao</div>
+          <ul class="bullet-list">
+            <li>Chủ động thông tin đối ngoại, cung cấp các tài liệu chính xác về đời sống tôn giáo phồn vinh tại Việt Nam cho bạn bè quốc tế.</li>
+            <li>Vạch trần bộ mặt thật của các đối tượng phản động đội lốt tôn giáo như "Ủy ban Cứu trợ người vượt biển" (BPSOS) do Nguyễn Đình Thắng cầm đầu.</li>
+          </ul>
+        </div>
+
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">🚨</span> Xử lý Kiên quyết theo Pháp luật</div>
+          <ul class="bullet-list">
+            <li>Cô lập và bóc gỡ các đường dây móc nối tài trợ tiền bạc từ các tổ chức phản động bên ngoài vào trong nước.</li>
+            <li>Xử lý nghiêm minh theo Bộ luật Hình sự các hành vi "Lợi dụng các quyền tự do dân chủ xâm phạm lợi ích của Nhà nước, quyền, lợi ích hợp pháp của tổ chức, cá nhân" (Điều 331).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="visual-feature-card">
+        <img src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80" alt="Bảo vệ bình yên cuộc sống" class="vfc-img">
+        <div class="vfc-body">
+          <div class="vfc-title">Giữ vững An ninh Quốc gia</div>
+          <p class="vfc-desc">Chủ động phòng ngừa, kiên quyết đấu tranh, kết hợp chặt chẽ giữa biện pháp nghiệp vụ an ninh với công tác vận động quần chúng là bí quyết bảo đảm môi trường xã hội ổn định, bình yên cho đất nước phát triển.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 9: Sơ đồ tư duy -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">HỆ THỐNG HÓA KIẾN THỨC</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Sơ đồ tư duy logic</span>
+  </div>
+  <h2 class="slide-heading">Sơ đồ tư duy: <span class="highlight">Âm mưu của địch & 4 Giải pháp phòng chống</span></h2>
+  <div class="slide-body">
+    <div class="mindmap-box">
+      <div class="mm-node-root">PHÒNG CHỐNG ĐỊCH LỢI DỤNG VẤN ĐỀ TÔN GIÁO CHỐNG PHÁ VIỆT NAM</div>
+      <div class="mm-branch-grid">
+        <div class="mm-branch">
+          <div class="mm-branch-title">1. ÂM MƯU CỦA ĐỊCH</div>
+          <div class="mm-branch-desc">
+            • Tạo lực lượng đối trọng chính trị.<br>
+            • Kích động khiếu kiện đất đai.<br>
+            • Gieo rắc tà đạo, đạo lạ độc hại.<br>
+            • <strong>Quốc tế hóa vu cáo đàn áp tôn giáo.</strong>
+          </div>
+        </div>
+        <div class="mm-branch highlight">
+          <div class="mm-branch-title">2. GIẢI PHÁP 1 & 2</div>
+          <div class="mm-branch-desc">
+            • <strong>GP1:</strong> Tuyên truyền Luật TNTG 2016.<br>
+            • <strong>GP2:</strong> Thắt chặt đoàn kết Lương - Giáo.<br>
+            • Phát huy "Tốt đời đẹp đạo".
+          </div>
+        </div>
+        <div class="mm-branch highlight">
+          <div class="mm-branch-title">3. GIẢI PHÁP 3 (THEN CHỐT)</div>
+          <div class="mm-branch-desc">
+            • Nâng cao năng lực quản lý nhà nước.<br>
+            • Đào tạo cán bộ chuyên trách tôn giáo.<br>
+            • Ngăn chặn tà đạo, đạo lạ từ sớm.
+          </div>
+        </div>
+        <div class="mm-branch">
+          <div class="mm-branch-title">4. GIẢI PHÁP 4 (ĐẤU TRANH)</div>
+          <div class="mm-branch-desc">
+            • Kiên quyết đấu tranh tư tưởng.<br>
+            • Vô hiệu hóa kẻ đội lốt tôn giáo.<br>
+            • Chủ động thông tin đối ngoại chính xác.
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px; padding:10px 14px; background:var(--dnu-orange-light); border-radius:6px; font-size:14.5px; color:var(--dnu-orange-hover); font-weight:600; text-align:center;">
+        ★ Tôn trọng tự do tín ngưỡng chân chính - Kiên quyết không để tôn giáo bị lợi dụng làm công cụ chống phá Tổ quốc.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 10: Trách nhiệm sinh viên (Nội dung chuẩn mực GDQP-AN) -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">TRÁCH NHIỆM CÔNG DÂN - SINH VIÊN</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Học tập & Hành động</span>
+  </div>
+  <h2 class="slide-heading">Trách nhiệm của sinh viên <span class="highlight">Đại học Đại Nam (DNU)</span></h2>
+  <div class="slide-body">
+    <div class="grid-2col-wide-left">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="info-card primary">
+          <div class="card-title"><span class="icon-badge">1</span> Tuyệt đối Trung thành với Đảng, Nhà nước & Tổ quốc</div>
+          <p style="font-size:16.5px; line-height:1.55;">Kiên định mục tiêu độc lập dân tộc gắn liền với Chủ nghĩa xã hội; chấp hành nghiêm chỉnh đường lối, chủ trương của Đảng, chính sách và pháp luật của Nhà nước.</p>
+        </div>
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">2</span> Tích cực Học tập, Tu dưỡng Đạo đức Cách mạng</div>
+          <p style="font-size:16.5px; line-height:1.55;">Không ngừng rèn luyện bản lĩnh chính trị vững vàng, trau dồi tri thức khoa học, nâng cao trình độ chuyên môn; hoàn thành xuất sắc nhiệm vụ học tập và rèn luyện tại Nhà trường.</p>
+        </div>
+        <div class="info-card accent">
+          <div class="card-title"><span class="icon-badge">3</span> Nêu cao Tinh thần Cảnh giác Cách mạng</div>
+          <p style="font-size:16.5px; line-height:1.55;">Chủ động phòng ngừa và kiên quyết đấu tranh phản bác các quan điểm sai trái, thù địch; không tin, không nghe, không chia sẻ các thông tin xấu độc, kích động chia rẽ khối đại đoàn kết.</p>
+        </div>
+        <div class="info-card secondary">
+          <div class="card-title"><span class="icon-badge">4</span> Xung kích Tham gia Bảo vệ An ninh Tổ quốc</div>
+          <p style="font-size:16.5px; line-height:1.55;">Gương mẫu trong phong trào toàn dân bảo vệ an ninh Tổ quốc tại nơi cư trú và học đường; sẵn sàng thực hiện nghĩa vụ quân sự bảo vệ vững chắc Tổ quốc Việt Nam XHCN.</p>
+        </div>
+      </div>
+
+      <div class="media-container">
+        <img src="../images/dnu_volunteer_real.jpg" alt="Thanh niên sinh viên xung kích" class="media-img" onerror="this.src='../images/dnu_volunteer_real.jpg'">
+        <div class="media-caption">Tuổi trẻ Đại học Đại Nam nêu cao tinh thần xung kích, bản lĩnh chính trị và trách nhiệm bảo vệ Tổ quốc.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Slide 11: Mini Game Quiz -->
+<div class="slide">
+  <div class="slide-top-meta">
+    <span class="topic-tag">TƯƠNG TÁC LỚP HỌC</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Ôn tập củng cố</span>
+  </div>
+  <h2 class="slide-heading">Mini Game: <span class="highlight">Đố vui củng cố kiến thức Vấn đề 6</span></h2>
+  <div class="slide-body">
+    <div class="quiz-container">
+      <div class="quiz-header">
+        <span style="font-weight:700; color:var(--dnu-blue); font-size:16px;">Câu hỏi trắc nghiệm nhanh</span>
+        <span class="quiz-score-badge" id="quizScore">Điểm: 0 / 2</span>
+      </div>
+      <div class="quiz-question" id="quizQText">Đang tải câu hỏi...</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-explanation" id="quizExplanation"></div>
+      <div class="quiz-controls">
+        <button class="btn-quiz-action" id="btnQuizNext">Câu tiếp theo ›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 12: Lời cảm ơn & Bế mạc (Không để ảnh) -->
+<div class="slide" style="justify-content:center; align-items:center;">
+  <div class="slide-top-meta" style="width:100%; max-width:960px;">
+    <span class="topic-tag">KẾT THÚC BÀI THUYẾT TRÌNH</span>
+    <span style="color:#64748B; font-size:13px; font-weight:600;">Lời tri ân & Bế mạc</span>
+  </div>
+  
+  <div style="width:100%; max-width:960px; background:#FFFFFF; border:1px solid #E2E8F0; border-top:5px solid var(--dnu-orange); border-radius:12px; padding:36px 48px; box-shadow:0 10px 30px rgba(0, 0, 0, 0.05); text-align:center;">
+    <div style="font-size:38px; font-weight:800; color:var(--dnu-orange); margin-bottom:14px; letter-spacing:1px;">
+      XIN TRÂN TRỌNG CẢM ƠN!
+    </div>
+    
+    <div style="font-size:20px; font-weight:700; color:var(--dnu-blue-dark); margin-bottom:18px; line-height:1.5;">
+      Kính chúc Thầy/Cô và các bạn sinh viên luôn dồi dào sức khỏe, hạnh phúc và thành công!
+    </div>
+
+    <p style="font-size:17px; color:var(--text-main); line-height:1.65; max-width:820px; margin:0 auto 22px auto;">
+      Nhóm 6 xin chân thành cảm ơn Thầy/Cô giảng viên bộ môn <strong>Giáo dục Quốc phòng & An ninh</strong> cùng toàn thể các bạn sinh viên lớp học phần đã chú ý theo dõi, lắng nghe và đóng góp ý kiến cho bài thuyết trình của nhóm.
+    </p>
+
+    <div style="background:var(--dnu-blue-light); border-left:4px solid var(--dnu-blue); border-radius:8px; padding:16px 24px; max-width:850px; margin:0 auto 26px auto; text-align:left;">
+      <div style="font-size:13.5px; font-weight:800; color:var(--dnu-blue); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">★ Thông điệp bế mạc</div>
+      <div style="font-size:16.5px; font-weight:600; color:var(--dnu-blue-dark); line-height:1.55; font-style:italic;">
+        "Giữ vững thế trận lòng dân, thắt chặt tình đoàn kết lương - giáo, kiên quyết đấu tranh phản bác luận điệu sai trái, bảo vệ cuộc sống bình yên của nhân dân!"
+      </div>
+    </div>
+
+    <div style="border-top:1px solid #E2E8F0; padding-top:20px; display:flex; justify-content:space-between; align-items:center; max-width:850px; margin:0 auto; font-size:15px; color:#64748B;">
+      <div>Nhóm thực hiện: <strong style="color:var(--dnu-blue-dark);">Nhóm 6 (Lớp GDQP-AN)</strong></div>
+      <div style="font-weight:700; color:var(--dnu-orange);">HỌC ĐỂ THAY ĐỔI • LEARN TO CHANGE</div>
+      <div>Trường Đại học Đại Nam • <a href="http://dainam.edu.vn" target="_blank" style="color:var(--dnu-blue); text-decoration:none; font-weight:bold;">dainam.edu.vn</a></div>
+    </div>
+  </div>
+</div>
+</div>
+  </main>
+
+  <!-- Presentation Bottom Controls Bar -->
+  <footer class="presentation-footer-bar">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="footer-left-tools">
+      <div class="footer-timer-badge" id="footerTimer" title="Thời gian thuyết trình (bắt đầu tính từ khi chuyển khỏi slide đầu tiên)">
+        <span class="timer-dot footer-timer-dot"></span>
+        <span class="footer-timer-label">⏱ Thời gian:</span>
+        <span class="timer-digits" id="footerTimerDisplay">00:00</span>
+      </div>
+    </div>
+
+    <div class="footer-nav-center">
+      <button class="btn-nav" id="btnPrev" title="Slide trước (Phím Mũi tên trái / PageUp)">‹ Trước</button>
+      <button class="btn-nav" id="btnNext" title="Slide kế tiếp (Phím Space / Mũi tên phải / PageDown)">Tiếp theo ›</button>
+    </div>
+
+    <div class="footer-right-tools">
+      <button class="btn-tool btn-present" id="btnPresent" title="Bật chế độ trình chiếu máy chiếu 16:9 (Phím P hoặc F5)">📽️ Trình chiếu</button>
+      <button class="btn-tool" id="btnOverview" title="Tổng quan các slide (Phím O)">📑 Mục lục</button>
+      <button class="btn-tool" id="btnFullscreen" title="Toàn màn hình (Phím F)">⛶ Phóng to</button>
+      <a href="index.html" class="btn-tool" style="text-decoration:none;" title="Về trang chủ chọn bài">🏠 Trang chủ</a>
+    </div>
+  </footer>
+
+  <!-- Overview Modal -->
+  <div class="overview-modal" id="overviewModal">
+    <div class="overview-header">
+      <h3 style="font-size:20px; font-weight:800; color:var(--dnu-orange);">Danh mục các Slide (Nhấn để chuyển nhanh)</h3>
+      <button class="btn-nav" id="btnCloseOverview">✕ Đóng (Esc)</button>
+    </div>
+    <div class="overview-grid" id="overviewGrid"></div>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    // Presentation Timer: counts elapsed time from first slide transition
+    let timerStarted = false;
+    let timerStartTime = null;
+    let timerInterval = null;
+
+    function startPresentationTimer() {
+      if (timerStarted) return;
+      timerStarted = true;
+      timerStartTime = Date.now();
+      
+      const dots = document.querySelectorAll('.timer-dot');
+      dots.forEach(d => d.classList.add('running'));
+
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - timerStartTime) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        let formatted = '';
+        if (mins < 60) {
+          formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        } else {
+          const hrs = Math.floor(mins / 60);
+          const remMins = mins % 60;
+          formatted = `${String(hrs).padStart(2, '0')}:${String(remMins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+        const timerDisplay = document.getElementById('timerDisplay');
+        if (timerDisplay) timerDisplay.textContent = formatted;
+        const footerTimerDisplay = document.getElementById('footerTimerDisplay');
+        if (footerTimerDisplay) footerTimerDisplay.textContent = formatted;
+      }, 1000);
+    }
+
+
+    const canvasPageNum = document.getElementById('canvasPageNum');
+    const slideDeck = document.getElementById('slideDeck');
+    const progressFill = document.getElementById('progressFill');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+    const btnOverview = document.getElementById('btnOverview');
+    const btnCloseOverview = document.getElementById('btnCloseOverview');
+    const overviewModal = document.getElementById('overviewModal');
+    const overviewGrid = document.getElementById('overviewGrid');
+
+    function updatePresentation() {
+      slides.forEach((slide, idx) => {
+        slide.classList.toggle('active', idx === currentSlide);
+      });
+
+      // Update canvas overlay page num
+      const formattedNum = String(currentSlide + 1).padStart(2, '0');
+      const formattedTotal = String(totalSlides).padStart(2, '0');
+      if (canvasPageNum) {
+        canvasPageNum.textContent = `${formattedNum} / ${formattedTotal}`;
+      }
+
+      // Switch theme on cover slide
+      if (currentSlide === 0) {
+        slideDeck.classList.add('is-cover');
+      } else {
+        slideDeck.classList.remove('is-cover');
+      }
+
+      // Progress bar
+      const progressPercent = ((currentSlide + 1) / totalSlides) * 100;
+      progressFill.style.width = `${progressPercent}%`;
+
+      // Nav buttons state
+      btnPrev.disabled = currentSlide === 0;
+      btnNext.disabled = currentSlide === totalSlides - 1;
+
+      // Update overview thumbnails
+      const thumbs = document.querySelectorAll('.overview-thumb');
+      thumbs.forEach((th, idx) => {
+        th.classList.toggle('current', idx === currentSlide);
+      });
+    }
+
+    function goToSlide(n) {
+      if (n >= 0 && n < totalSlides) {
+        if (!timerStarted && n > 0) {
+          startPresentationTimer();
+        }
+        currentSlide = n;
+        updatePresentation();
+      }
+    }
+
+    btnPrev.addEventListener('click', () => goToSlide(currentSlide - 1));
+    btnNext.addEventListener('click', () => goToSlide(currentSlide + 1));
+    const canvasTimer = document.getElementById('canvasTimer');
+    const footerTimer = document.getElementById('footerTimer');
+    if (canvasTimer) canvasTimer.addEventListener('click', () => { if (!timerStarted) startPresentationTimer(); });
+    if (footerTimer) footerTimer.addEventListener('click', () => { if (!timerStarted) startPresentationTimer(); });
+
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (overviewModal.classList.contains('open')) {
+        if (e.key === 'Escape') toggleOverview(false);
+        return;
+      }
+      if (e.key === 'Escape') {
+        if (isPresenting) togglePresentationMode(false);
+        return;
+      }
+      if (e.key === 'p' || e.key === 'P' || e.key === 'F5') {
+        e.preventDefault();
+        togglePresentationMode();
+        return;
+      }
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        goToSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace') {
+        e.preventDefault();
+        goToSlide(currentSlide - 1);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        goToSlide(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        goToSlide(totalSlides - 1);
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullScreen();
+      } else if (e.key === 'o' || e.key === 'O') {
+        e.preventDefault();
+        toggleOverview(true);
+      }
+    });
+
+    // Fullscreen toggle
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+    btnFullscreen.addEventListener('click', toggleFullScreen);
+
+    // Overview modal generator
+    slides.forEach((s, idx) => {
+      const h2 = s.querySelector('h2') || s.querySelector('h1');
+      const title = h2 ? h2.innerText.replace(/\n/g, ' ') : `Slide ${idx+1}`;
+      const thumb = document.createElement('div');
+      thumb.className = `overview-thumb ${idx === 0 ? 'current' : ''}`;
+      thumb.innerHTML = `
+        <span class="thumb-num">SLIDE ${String(idx+1).padStart(2, '0')}</span>
+        <div class="thumb-title">${title}</div>
+        <span style="font-size:10px; color:#94A3B8;">Nhấn để xem</span>
+      `;
+      thumb.addEventListener('click', () => {
+        goToSlide(idx);
+        toggleOverview(false);
+      });
+      overviewGrid.appendChild(thumb);
+    });
+
+    function toggleOverview(open) {
+      overviewModal.classList.toggle('open', open);
+    }
+    btnOverview.addEventListener('click', () => toggleOverview(true));
+    btnCloseOverview.addEventListener('click', () => toggleOverview(false));
+
+    // Interactive Quiz Implementation
+    
+const quizQuestions = [
+  {
+    q: "Thủ đoạn nào sau đây của các thế lực thù địch nhằm biến tôn giáo thành lực lượng đối trọng chính trị?",
+    options: [
+      "A. Khuyến khích đồng bào tham gia các hoạt động từ thiện",
+      "B. Kích động tranh chấp đất đai cơ sở thờ tự và đòi ly khai",
+      "C. Hỗ trợ in ấn kinh sách theo đúng quy định pháp luật",
+      "D. Đóng góp kinh phí xây dựng trường mầm non"
+    ],
+    correct: 1,
+    explain: "Chính xác! Kích động khiếu kiện đất đai, đòi lại cơ sở thờ tự trái luật là thủ đoạn thâm độc nhằm kích động tâm lý đối kháng giữa tôn giáo và chính quyền."
+  },
+  {
+    q: "Để bảo vệ quyền tự do tín ngưỡng chân chính và giữ vững trật tự xã hội, giải pháp nào giữ vai trò then chốt?",
+    options: [
+      "A. Nâng cao năng lực quản lý nhà nước về tôn giáo",
+      "B. Cấm đoán hoàn toàn các hoạt động tôn giáo",
+      "C. Không cần quan tâm tới các tà đạo, đạo lạ",
+      "D. Để các tổ chức tôn giáo tự quản lý không cần pháp luật"
+    ],
+    correct: 0,
+    explain: "Chính xác! Nâng cao hiệu lực quản lý nhà nước về tôn giáo là giải pháp then chốt giúp định hướng hoạt động tôn giáo tuân thủ pháp luật, bảo vệ tín đồ chân chính."
+  }
+];
+
+let curQ = 0;
+let quizScore = 0;
+const qText = document.getElementById('quizQText');
+const qOptions = document.getElementById('quizOptions');
+const qExplain = document.getElementById('quizExplanation');
+const qScoreBadge = document.getElementById('quizScore');
+const btnNextQ = document.getElementById('btnQuizNext');
+
+function renderQuestion() {
+  if (curQ >= quizQuestions.length) {
+    qText.innerHTML = "🎉 Chúc mừng bạn đã hoàn thành bài ôn tập!";
+    qOptions.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:20px; font-size:18px; font-weight:700; color:var(--dnu-orange);">Tổng điểm: ${quizScore} / ${quizQuestions.length}</div>`;
+    qExplain.style.display = 'none';
+    btnNextQ.style.display = 'none';
+    return;
+  }
+  const item = quizQuestions[curQ];
+  qText.textContent = `Câu ${curQ + 1}: ${item.q}`;
+  qOptions.innerHTML = '';
+  qExplain.classList.remove('show');
+  btnNextQ.disabled = true;
+
+  item.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => {
+      const allBtns = qOptions.querySelectorAll('.quiz-option-btn');
+      allBtns.forEach(b => b.disabled = true);
+      if (idx === item.correct) {
+        btn.classList.add('correct');
+        quizScore++;
+        qScoreBadge.textContent = `Điểm: ${quizScore} / ${quizQuestions.length}`;
+        qExplain.style.background = '#ECFDF5';
+        qExplain.style.color = '#065F46';
+      } else {
+        btn.classList.add('wrong');
+        allBtns[item.correct].classList.add('correct');
+        qExplain.style.background = '#FEF2F2';
+        qExplain.style.color = '#991B1B';
+      }
+      qExplain.textContent = item.explain;
+      qExplain.classList.add('show');
+      btnNextQ.disabled = false;
+    });
+    qOptions.appendChild(btn);
+  });
+}
+
+btnNextQ.addEventListener('click', () => {
+  curQ++;
+  renderQuestion();
+});
+renderQuestion();
+
+
+    // Initialize state
+    
+    
+
+    // In presentation mode, clicking on slide navigates next slide (like PowerPoint)
+    
+
+    
+    // ==============================================================
+    
+
+    // In presentation mode, clicking anywhere on the slide advances to next slide (like PowerPoint)
+    
+
+
+    
+    // ==============================================================
+    // Presentation Mode (16:9 Projector Cinema Mode)
+    // ==============================================================
+    const btnPresent = document.getElementById('btnPresent');
+    const btnExitPresent = document.getElementById('btnExitPresent');
+    let isPresenting = false;
+
+    function togglePresentationMode(forceState) {
+      if (typeof forceState === 'boolean') {
+        isPresenting = forceState;
+      } else {
+        isPresenting = !isPresenting;
+      }
+      
+      document.body.classList.toggle('is-presenting', isPresenting);
+
+      if (isPresenting) {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+        if (!timerStarted) startPresentationTimer();
+      } else {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    }
+
+    if (btnPresent) btnPresent.addEventListener('click', () => togglePresentationMode(true));
+    if (btnExitPresent) btnExitPresent.addEventListener('click', () => togglePresentationMode(false));
+
+    // Listen to Fullscreen change to sync isPresenting
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && isPresenting) {
+        togglePresentationMode(false);
+      }
+    });
+
+    // In presentation mode, clicking anywhere on the slide advances to next slide (like PowerPoint)
+    if (slideDeck) {
+      slideDeck.addEventListener('click', (e) => {
+        if (!isPresenting) return;
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.quiz-option-btn') || e.target.closest('.canvas-timer-badge')) {
+          return;
+        }
+        goToSlide(currentSlide + 1);
+      });
+    }
+
+
+    updatePresentation();
+  </script>
+
+  <!-- Floating Exit Presentation Button -->
+  <button class="btn-exit-present" id="btnExitPresent" title="Thoát chế độ trình chiếu (Esc hoặc P)">✕ Thoát trình chiếu (Esc)</button>
+</body>
+</html>
